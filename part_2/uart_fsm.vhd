@@ -1,10 +1,12 @@
--- Author: Marek Prochazka (xproch0o, https://github.com/marekprochazka)
-
+-- uart_fsm.vhd: UART controller - finite state machine
+-- Author(s): Marek Prochazka
+--
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity UART_FSM is 
-port (
+-------------------------------------------------
+entity UART_FSM is
+port(
     CLK             : in std_logic;
     RST             : in std_logic;
     DIN             : in std_logic;
@@ -13,10 +15,10 @@ port (
     READ_ENABLE     : out std_logic;
     VALID           : out std_logic;
     CLK_RST         : out std_logic
-);
+   );
 end entity UART_FSM;
 
-
+-------------------------------------------------
 architecture behavioral of UART_FSM is
 -- enumerated type for states
 type mealy_state_type is (IDLE_STATE, WAIT_READ_STATE, READ_STATE, WAIT_END_STATE);
@@ -40,7 +42,7 @@ begin
                         state_sig <= IDLE_STATE;
                     end if;
                 when WAIT_READ_STATE =>
-                    if CLK_CNT = "10000" then
+                    if CLK_CNT = "01111" then
                         state_sig <= READ_STATE;
                     else 
                         state_sig <= WAIT_READ_STATE;
@@ -52,7 +54,7 @@ begin
                         state_sig <= READ_STATE;
                     end if;
                 when WAIT_END_STATE =>
-                    if CLK_CNT = "10000" then
+                    if CLK_CNT = "01111" then
                         state_sig <= IDLE_STATE;
                     else 
                         state_sig <= WAIT_END_STATE;
@@ -77,7 +79,7 @@ begin
                     CLK_RST <= '1';
                 end if;
             when WAIT_READ_STATE =>
-                if CLK_CNT = "10000" then
+                if CLK_CNT = "01111" then
                     READ_ENABLE <= '0';
                     VALID <= '0';
                     CLK_RST <= '1';
@@ -92,11 +94,11 @@ begin
                     VALID <= '0';
                     CLK_RST <= '1';
                 else    
-                    if CLK_CNT = "01000" then
+                    if CLK_CNT = "00111" then
                         READ_ENABLE <= '1';
                         VALID <= '0';
                         CLK_RST <= '0';
-                    elsif CLK_CNT = "10000" then
+                    elsif CLK_CNT = "01111" then
                         READ_ENABLE <= '0';
                         VALID <= '0';
                         CLK_RST <= '1';
@@ -107,10 +109,14 @@ begin
                     end if;
                 end if;
             when WAIT_END_STATE =>
-                if CLK_CNT = "10000" then
+                if CLK_CNT = "01111" then
                     READ_ENABLE <= '0';
-                    VALID <= '1';
-                    CLK_RST <= '0';
+                    VALID <= '0';
+                    CLK_RST <= '1';
+                elsif CLK_CNT = "00111" then              
+                     READ_ENABLE <= '0';
+                     VALID <= '1';
+                     CLK_RST <= '0';
                 else
                     READ_ENABLE <= '0';
                     VALID <= '0';
@@ -118,4 +124,5 @@ begin
                 end if;
         end case;
     end process;
+
 end behavioral;

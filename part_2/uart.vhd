@@ -1,20 +1,22 @@
--- Author: Marek Prochazka (xproch0o, https://github.com/marekprochazka)
-
+-- uart.vhd: UART controller - receiving part
+-- Author(s): Marek Prochazka
+--
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
-use ieee.std_logic_arith.all;
 
-entity UART_RX is 
-port (
-    CLK:            in std_logic;
-    RST:            in std_logic;
-    DIN:            in std_logic;
-    DOUT:           out std_logic_vector(7 downto 0);
-    DOUT_VLD:     out std_logic
+-------------------------------------------------
+entity UART_RX is
+port(	
+    CLK: 	    in std_logic;
+	RST: 	    in std_logic;
+	DIN: 	    in std_logic;
+	DOUT: 	    out std_logic_vector(7 downto 0);
+	DOUT_VLD: 	out std_logic
 );
-end UART_RX;
+end UART_RX;  
 
+-------------------------------------------------
 architecture behavioral of UART_RX is
 -- fsm inputs
 signal clk_cnt          : std_logic_vector(4 downto 0):= "00000";
@@ -45,6 +47,7 @@ FSM: entity work.UART_FSM(behavioral)
         if rising_edge(CLK) then
             -- set default valid output to 0
             DOUT_VLD <= data_valid;
+			
 
             -- increase counter
             if clk_cnt_reset = '1' then
@@ -56,8 +59,6 @@ FSM: entity work.UART_FSM(behavioral)
             -- bit counter 
             if read_enable = '1' then 
                 bit_count <= bit_count + '1';
-            if data_valid = '1' then 
-                bit_count <= "0000";
             end if;
 
             -- read finished comparator
@@ -69,24 +70,24 @@ FSM: entity work.UART_FSM(behavioral)
 
             if data_valid = '1' then 
                 DOUT_VLD <= '1';
+				bit_count <= "0000";
             end if;
 
             -- reading data
-            case bit_count is 
-                when "0000" => DOUT(0) <= DIN;
-                when "0001" => DOUT(1) <= DIN;
-                when "0010" => DOUT(2) <= DIN;
-                when "0011" => DOUT(3) <= DIN;
-                when "0100" => DOUT(4) <= DIN;
-                when "0101" => DOUT(5) <= DIN;
-                when "0110" => DOUT(6) <= DIN;
-                when "0111" => DOUT(7) <= DIN;
-                when others => null;
-            end case;
+            if read_enable = '1' then 
+                case bit_count is 
+                    when "0000" => DOUT(0) <= DIN;
+                    when "0001" => DOUT(1) <= DIN;
+                    when "0010" => DOUT(2) <= DIN;
+                    when "0011" => DOUT(3) <= DIN;
+                    when "0100" => DOUT(4) <= DIN;
+                    when "0101" => DOUT(5) <= DIN;
+                    when "0110" => DOUT(6) <= DIN;
+                    when "0111" => DOUT(7) <= DIN;
+                    when others => null;
+                end case;
             end if;
-        end if;
+            end if;
     end process;
-
-
 
 end behavioral;
